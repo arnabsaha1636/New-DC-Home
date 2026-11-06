@@ -1,0 +1,6 @@
+{
+  "name": "StayWise DC",
+  "description": "DC Airbnb hosting decision-support system with official Inside Airbnb dataset analysis, legal compliance checkers, realistic profit forecasting, and guided MBA demonstration mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
