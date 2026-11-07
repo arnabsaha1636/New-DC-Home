@@ -1,0 +1,6 @@
+{
+  "source_commit": "d17cbc4f9231d968766964e34a3edbf5563c6c20",
+  "source_tree": "ddd27201e6b94e9f3677acbbc424e0316a5c86c4",
+  "build_command": "npm run build:pages",
+  "dataset_sha256": "adf5f22a93a6bae1bfa7aed60994e382415666ecf563994035d80d760bd9f268"
+}
