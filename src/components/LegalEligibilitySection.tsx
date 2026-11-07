@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -12,9 +12,16 @@ import {
   XCircle,
   Building2,
   Calendar,
-  DollarSign
-} from 'lucide-react';
-import { HomeownerProfile, evaluateDcLegalCompliance } from '../utils/calculator';
+  DollarSign,
+} from "lucide-react";
+import {
+  HomeownerProfile,
+  evaluateDcLegalCompliance,
+  LEGAL_REVIEW_DATE,
+  LEGAL_SOURCE,
+  LEGAL_CODE_SOURCE,
+  TAX_SOURCE,
+} from "../utils/calculator";
 
 interface LegalCheckerProps {
   profile: HomeownerProfile;
@@ -41,7 +48,8 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Official rules under the DC Short-Term Rental Regulation Act (DC Code Title 47 Ch. 28)
+            Decision-support screening from user declarations; not a verified
+            license or legal authorization.
           </p>
         </div>
 
@@ -49,7 +57,7 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
           {legal.isEligible ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Eligible: {legal.licenseCategory}
+              Screening: {legal.licenseCategory}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/30">
@@ -60,20 +68,53 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
         </div>
       </div>
 
+      <p className="text-xs text-slate-400 mt-4">
+        Legal sources reviewed {LEGAL_REVIEW_DATE}:{" "}
+        <a
+          className="text-indigo-300 underline"
+          href={LEGAL_SOURCE}
+          target="_blank"
+          rel="noreferrer"
+        >
+          DLCP requirements
+        </a>{" "}
+        ·{" "}
+        <a
+          className="text-indigo-300 underline"
+          href={LEGAL_CODE_SOURCE}
+          target="_blank"
+          rel="noreferrer"
+        >
+          DC Code § 30-201.06
+        </a>{" "}
+        ·{" "}
+        <a
+          className="text-indigo-300 underline"
+          href={TAX_SOURCE}
+          target="_blank"
+          rel="noreferrer"
+        >
+          OTR tax notice
+        </a>
+        . Exemptions require independent review of approved dates and nights; no
+        180-night assumption is used.
+      </p>
       {/* Interactive Compliance Profile Toggles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-5">
         <div className="p-3.5 bg-slate-950/60 rounded-lg border border-slate-800">
           <label className="text-xs font-medium text-slate-300 block mb-1.5 flex items-center justify-between">
             <span>Primary Residence Status</span>
-            <span className="text-[10px] text-amber-400 font-mono">DC Homestead</span>
+            <span className="text-[10px] text-amber-400 font-mono">
+              DC Homestead
+            </span>
           </label>
           <div className="flex gap-2">
             <button
               onClick={() => onChangeProfile({ isPrimaryResidence: true })}
               className={`flex-1 py-1.5 text-xs rounded font-medium transition ${
                 profile.isPrimaryResidence
-                  ? 'bg-indigo-600 text-white font-semibold'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                  ? "bg-indigo-600 text-white font-semibold"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
             >
               Primary (Homestead)
@@ -82,8 +123,8 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
               onClick={() => onChangeProfile({ isPrimaryResidence: false })}
               className={`flex-1 py-1.5 text-xs rounded font-medium transition ${
                 !profile.isPrimaryResidence
-                  ? 'bg-red-600 text-white font-semibold'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                  ? "bg-red-600 text-white font-semibold"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
             >
               Investment / 2nd Home
@@ -97,25 +138,37 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
         <div className="p-3.5 bg-slate-950/60 rounded-lg border border-slate-800">
           <label className="text-xs font-medium text-slate-300 block mb-1.5 flex items-center justify-between">
             <span>Hosting Arrangement</span>
-            <span className="text-[10px] text-indigo-400 font-mono">Presence</span>
+            <span className="text-[10px] text-indigo-400 font-mono">
+              Presence
+            </span>
           </label>
           <div className="flex gap-2">
             <button
-              onClick={() => onChangeProfile({ hostPresentDuringStays: true, rentalScope: 'spare_room' })}
+              onClick={() =>
+                onChangeProfile({
+                  hostPresentDuringStays: true,
+                  rentalScope: "spare_room",
+                })
+              }
               className={`flex-1 py-1.5 text-xs rounded font-medium transition ${
                 profile.hostPresentDuringStays
-                  ? 'bg-indigo-600 text-white font-semibold'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                  ? "bg-indigo-600 text-white font-semibold"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
             >
               Hosted (On-Site)
             </button>
             <button
-              onClick={() => onChangeProfile({ hostPresentDuringStays: false, rentalScope: 'entire_home' })}
+              onClick={() =>
+                onChangeProfile({
+                  hostPresentDuringStays: false,
+                  rentalScope: "entire_home",
+                })
+              }
               className={`flex-1 py-1.5 text-xs rounded font-medium transition ${
                 !profile.hostPresentDuringStays
-                  ? 'bg-amber-600 text-white font-semibold'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                  ? "bg-amber-600 text-white font-semibold"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
               }`}
             >
               Unhosted (Vacation)
@@ -123,8 +176,8 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
           </div>
           <p className="text-[11px] text-slate-400 mt-2">
             {profile.hostPresentDuringStays
-              ? 'Owner present on premises: exempt from 90-night limit.'
-              : 'Host absent: subject to strict 90 cumulative nights/calendar year limit.'}
+              ? "Owner present on premises: exempt from 90-night limit."
+              : "Host absent: subject to strict 90 cumulative nights/calendar year limit."}
           </p>
         </div>
 
@@ -135,11 +188,11 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
             </label>
             <div className="text-xl font-black text-amber-300 font-mono mt-1">
-              {legal.annualNightCap === 'Unlimited' ? 'Unlimited' : `${legal.annualNightCap} Nights / Yr`}
+              {legal.annualNightCap === "Unlimited"
+                ? "Unlimited"
+                : `${legal.annualNightCap} Nights / Yr`}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              {legal.capReason}
-            </p>
+            <p className="text-[11px] text-slate-400 mt-1">{legal.capReason}</p>
           </div>
 
           {!profile.hostPresentDuringStays && profile.isPrimaryResidence && (
@@ -148,10 +201,16 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
                 <input
                   type="checkbox"
                   checked={!!profile.hasExemptionFor90NightLimit}
-                  onChange={(e) => onChangeProfile({ hasExemptionFor90NightLimit: e.target.checked })}
+                  onChange={(e) =>
+                    onChangeProfile({
+                      hasExemptionFor90NightLimit: e.target.checked,
+                    })
+                  }
                   className="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0"
                 />
-                <span>DLCP Exemption Approved (Up to 180 nights)</span>
+                <span>
+                  I declare an exemption (unverified; standard cap retained)
+                </span>
               </label>
             </div>
           )}
@@ -211,23 +270,39 @@ export const LegalEligibilitySection: React.FC<LegalCheckerProps> = ({
           onClick={() => setShowFaq(!showFaq)}
           className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition"
         >
-          {showFaq ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {showFaq ? 'Hide DC Short-Term Rental Act Key Facts' : 'View DC Short-Term Rental Act (DC Law 22-307) Key Facts & Fines'}
+          {showFaq ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
+          {showFaq
+            ? "Hide DC Short-Term Rental Act Key Facts"
+            : "View DC Short-Term Rental Act (DC Law 22-307) Key Facts & Fines"}
         </button>
 
         {showFaq && (
           <div className="mt-3 p-4 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-2">
             <p>
-              <strong>Enactment:</strong> DC Law 22-307 (effective 2019, enforced January 2022) established a comprehensive licensing regime administered by the Department of Licensing and Consumer Protection (DLCP).
+              <strong>Enactment:</strong> DC Law 22-307 (effective 2019,
+              enforced January 2022) established a comprehensive licensing
+              regime administered by the Department of Licensing and Consumer
+              Protection (DLCP).
             </p>
             <p>
-              <strong>Penalties:</strong> Operating an unpermitted short-term rental or violating the 90-night unhosted cap exposes hosts to tiered civil fines: <strong>$1,000 for the first violation</strong>, <strong>$2,000 for the second</strong>, and up to <strong>$6,000</strong> plus license revocation for subsequent offenses.
+              <strong>Penalties:</strong> Unlicensed operation or violation of
+              the unhosted cap can lead to enforcement, fines and license
+              suspension or revocation. Consult DLCP for applicable penalties.
             </p>
             <p>
-              <strong>Homestead Deduction:</strong> Only homeowners who claim the property as their primary residence under DC Tax Code § 47-850 are eligible to apply.
+              <strong>Homestead Deduction:</strong> Only homeowners who claim
+              the property as their primary residence under DC Tax Code § 47-850
+              are eligible to apply.
             </p>
             <p>
-              <strong>15% Lodging Tax:</strong> Airbnb is registered with the DC Office of Tax and Revenue as a marketplace facilitator, automatically collecting and remitting the 15% transient lodging tax on all bookings.
+              <strong>Guest Lodging Tax:</strong> OTR publishes a 15.95%
+              transient accommodations rate through September 30, 2027. Confirm
+              collection responsibilities with the booking platform; the
+              calculator exposes an editable guest-tax assumption.
             </p>
           </div>
         )}

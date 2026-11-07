@@ -1,30 +1,30 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import test from "node:test";
+import assert from "node:assert/strict";
 import {
   evaluateDcLegalCompliance,
   calculateHostingFinancials,
   MAYA_PETWORTH_BASE_CASE,
   HomeownerProfile,
-} from './calculator';
+} from "./calculator";
 
-test('Legal Compliance: Hosted license allows unlimited nights for primary residence', () => {
+test("Legal Compliance: Hosted license allows unlimited nights for primary residence", () => {
   const result = evaluateDcLegalCompliance(MAYA_PETWORTH_BASE_CASE);
   assert.equal(result.isEligible, true);
-  assert.equal(result.licenseCategory, 'Hosted License');
-  assert.equal(result.annualNightCap, 'Unlimited');
+  assert.equal(result.licenseCategory, "Hosted License");
+  assert.equal(result.annualNightCap, "Unlimited");
   assert.equal(result.nightCapEnforcedValue, 365);
 });
 
-test('Legal Compliance: Vacation Rental (unhosted) enforces strict 90-night limit without exemption', () => {
+test("Legal Compliance: Vacation Rental (unhosted) enforces strict 90-night limit without exemption", () => {
   const unhostedProfile: HomeownerProfile = {
     ...MAYA_PETWORTH_BASE_CASE,
     hostPresentDuringStays: false,
-    rentalScope: 'entire_home',
+    rentalScope: "entire_home",
     annualAvailableNights: 200,
   };
 
   const result = evaluateDcLegalCompliance(unhostedProfile);
-  assert.equal(result.licenseCategory, 'Vacation Rental License');
+  assert.equal(result.licenseCategory, "Vacation Rental License");
   assert.equal(result.annualNightCap, 90);
   assert.equal(result.nightCapEnforcedValue, 90);
 
@@ -35,14 +35,14 @@ test('Legal Compliance: Vacation Rental (unhosted) enforces strict 90-night limi
   assert.equal(fin.actualBookedNightsProjected, 45);
 });
 
-test('Legal Compliance: Non-primary residence is strictly ineligible for DC STR', () => {
+test("Legal Compliance: Non-primary residence is strictly ineligible for DC STR", () => {
   const investorProfile: HomeownerProfile = {
     ...MAYA_PETWORTH_BASE_CASE,
     isPrimaryResidence: false,
   };
   const result = evaluateDcLegalCompliance(investorProfile);
   assert.equal(result.isEligible, false);
-  assert.equal(result.licenseCategory, 'Ineligible');
+  assert.equal(result.licenseCategory, "Ineligible");
   assert.equal(result.nightCapEnforcedValue, 0);
 
   const fin = calculateHostingFinancials(investorProfile);
@@ -50,9 +50,9 @@ test('Legal Compliance: Non-primary residence is strictly ineligible for DC STR'
   assert.equal(fin.grossGuestTurnover, 0);
 });
 
-test('Maya Petworth Case: Calculates exact revenue, cleaning deficit, and net cash flow', () => {
+test("Maya Petworth Case: Calculates exact revenue, cleaning deficit, and net cash flow", () => {
   const fin = calculateHostingFinancials(MAYA_PETWORTH_BASE_CASE);
-  
+
   // 240 nights * 50% = 120 nights
   assert.equal(fin.actualBookedNightsProjected, 120);
   // 120 nights / 3 nights stay = 40 reservations
@@ -76,7 +76,7 @@ test('Maya Petworth Case: Calculates exact revenue, cleaning deficit, and net ca
   assert.equal(fin.totalCashOperatingCosts, 4358);
   // Net operating cash flow before tax = 16,600 - 4,358 = $12,242
   assert.equal(fin.netOperatingCashFlow, 12242);
-  
+
   // Setup amortization: $1500 / 2 = $750/year
   assert.equal(fin.annualSetupAmortization, 750);
 

@@ -1,1 +1,56 @@
 @import "tailwindcss";
+@source "./";
+@source "../index.html";
+@media print {
+  @page {
+    size: letter;
+    margin: 0.45in;
+  }
+  body:has(.submission-modal) #root {
+    display: none !important;
+  }
+  .report-controls {
+    display: none !important;
+  }
+  .submission-modal,
+  .submission-shell,
+  .submission-content {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    width: auto !important;
+    max-width: none !important;
+    background: white !important;
+    color: #111 !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .report-document {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .report-page {
+    break-after: page;
+  }
+  .report-page:last-child {
+    break-after: auto;
+  }
+  .report-page section {
+    break-inside: avoid;
+  }
+  .report-page p {
+    font-size: 9pt;
+    line-height: 1.35;
+  }
+  .report-page h1 {
+    font-size: 15pt;
+  }
+  .report-page h2 {
+    font-size: 10pt;
+  }
+  .report-page a {
+    font-size: 7pt;
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Sparkles,
   Play,
@@ -10,9 +10,20 @@ import {
   Clock,
   DollarSign,
   ShieldAlert,
-  ArrowRight
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+  ArrowRight,
+} from "lucide-react";
+import confetti from "canvas-confetti";
+import {
+  HomeownerProfile,
+  MAYA_PETWORTH_BASE_CASE,
+  calculateHostingFinancials,
+  evaluateDcLegalCompliance,
+  applyStressScenario,
+  hostingDecision,
+  money,
+  displayNumber,
+} from "../utils/calculator";
+import { DC_CITY_SUMMARY, profileComparables } from "../data/dcMarketData";
 
 export interface DemoStep {
   id: number;
@@ -20,108 +31,187 @@ export interface DemoStep {
   title: string;
   headline: string;
   presenterScript: string;
-  focusSection: 'intro' | 'profile' | 'compliance' | 'market' | 'financials' | 'stress' | 'recommendation';
+  focusSection:
+    | "intro"
+    | "profile"
+    | "compliance"
+    | "market"
+    | "financials"
+    | "stress"
+    | "recommendation";
   keyStatLabel: string;
   keyStatValue: string;
   keyStatNote: string;
   actionHint: string;
 }
 
-export const DEMO_TIMELINE: DemoStep[] = [
-  {
-    id: 1,
-    timecode: "0:00–0:20",
-    title: "The Problem",
-    headline: "The Airbnb Reality Gap in Washington, DC",
-    presenterScript:
-      "Many DC homeowners see advertised Airbnb nightly prices and assume hosting a spare bedroom or basement will be automatically profitable. But the real questions are: Can they legally host in DC? How much money do they actually keep after cleaning, platform fees, taxes, and startup costs? And is the loss of personal time worthwhile?",
-    focusSection: "intro",
-    keyStatLabel: "Advertised DC Mean Rate",
-    keyStatValue: "$317.45",
-    keyStatNote: "Gross advertised asking price across 6,906 Inside Airbnb listings (Sep 2026)",
-    actionHint: "Notice how advertised listing prices obscure host expenses and legal hurdles."
-  },
-  {
-    id: 2,
-    timecode: "0:20–0:45",
-    title: "Sample Homeowner",
-    headline: "Meet Maya: Petworth Rowhouse Spare Room",
-    presenterScript:
-      "Here is Maya Chen, an owner-occupant in Petworth, DC. She lives in her rowhouse as her primary residence and wants to rent out one furnished spare bedroom for up to 240 nights a year while continuing to live in the home. Her goal is to generate extra income to offset rising property taxes and household expenses.",
-    focusSection: "profile",
-    keyStatLabel: "Target Hosting Scope",
-    keyStatValue: "Hosted Spare Bedroom",
-    keyStatNote: "Primary residence owner-occupant, 2 guests max, 240 nights available",
-    actionHint: "The app immediately tailors legal rules and market comps to Maya's exact scenario."
-  },
-  {
-    id: 3,
-    timecode: "0:45–1:10",
-    title: "Legal & Market Comps",
-    headline: "DLCP Short-Term Rental Act & Inside Airbnb Comps",
-    presenterScript:
-      "First, legal compliance: Because Maya lives on-site during guest stays, she qualifies for a DC Hosted Short-Term Rental License, granting an exemption from DC's strict 90-night annual unhosted limit. Second, market comps: In Petworth, median advertised nightly price is $155 across 365 listings. Testing a conservative $125/night for a private room gives her competitive pricing power.",
-    focusSection: "compliance",
-    keyStatLabel: "Legal Classification",
-    keyStatValue: "Hosted (Unlimited)",
-    keyStatNote: "Primary residence confirmed; exempt from the DC 90-night unhosted cap",
-    actionHint: "Notice how unhosted vacation rentals are strictly capped at 90 nights under DC Law Title 47."
-  },
-  {
-    id: 4,
-    timecode: "1:10–1:40",
-    title: "Financial Analysis",
-    headline: "From $16,600 Turnover to Real Net Cash Flow",
-    presenterScript:
-      "Now look at the financial engine. At 50% occupancy (120 booked nights), Maya generates $15,000 in nightly room revenue plus $1,600 in guest cleaning charges, totaling $16,600 turnover. But look at operating costs: Airbnb's 3% fee takes $498. Paying cleaners $55 while charging guests $40 creates an immediate $600 annual cleaning deficit! Utilities, supplies, maintenance, and insurance take another $1,660. Net operating cash flow is $12,242, and economic profit after $750 setup amortization and $1,971 income tax is $9,521.",
-    focusSection: "financials",
-    keyStatLabel: "Economic Net Profit",
-    keyStatValue: "$9,521 / yr",
-    keyStatNote: "$793/month true profit after setup amortization and income taxes",
-    actionHint: "Use the interactive nightly rate slider to see revenue, costs, and profit update dynamically."
-  },
-  {
-    id: 5,
-    timecode: "1:40–2:05",
-    title: "Risk & Demand Stress Test",
-    headline: "What If Demand Falls 25%?",
-    presenterScript:
-      "What happens if tourism drops or competition increases? In one click, we run a stress test: If occupancy drops by 25% (down to 37.5%, or 90 booked nights), gross turnover drops to $12,450. Because fixed maintenance, insurance, and utilities remain constant, her net cash flow drops to $8,995 and true economic profit drops to $6,974. Even under severe stress, Maya remains comfortably above her 33-night break-even threshold.",
-    focusSection: "stress",
-    keyStatLabel: "Break-Even Occupancy",
-    keyStatValue: "13.8% (33 nights)",
-    keyStatNote: "Low fixed overhead ensures high resilience even during demand contractions",
-    actionHint: "Click the 25% demand drop stress test to simulate a downturn."
-  },
-  {
-    id: 6,
-    timecode: "2:05–2:30",
-    title: "Recommendation & Decision",
-    headline: "Holistic Host Decision: Economic & Lifestyle Scorecard",
-    presenterScript:
-      "StayWise DC delivers a clear recommendation: PROCEED WITH CAUTION. Financially, $9,521 net income strongly exceeds long-term room rental alternatives. Economically, she earns an effective $95.21 per hour for 100 hours of hosting labor. But her primary hurdle is lifestyle: sharing her living room and kitchen 120 nights a year. The app advises testing a 90-day pilot before investing more in furnishings.",
-    focusSection: "recommendation",
-    keyStatLabel: "Effective Hourly Wage",
-    keyStatValue: "$95.21 / hr",
-    keyStatNote: "100 hours annual labor ($9,521 profit / 100 hrs); exceeds $35/hr opportunity cost",
-    actionHint: "Look at the final scorecard comparing financial gains with lifestyle impact."
-  },
-  {
-    id: 7,
-    timecode: "2:30–2:45",
-    title: "Close & Summary",
-    headline: "Transforming Guesses into Actionable Decisions",
-    presenterScript:
-      "In under 3 minutes, StayWise DC transformed an overwhelming, legally ambiguous decision into a transparent, data-grounded evaluation. Rather than merely estimating Airbnb gross revenue, StayWise DC helps Washington, DC homeowners make legally secure, financially realistic choices.",
-    focusSection: "intro",
-    keyStatLabel: "Submission Deliverables",
-    keyStatValue: "Ready for Zoom & PDF",
-    keyStatNote: "100% compliant with Deliverables A, B, and C requirements",
-    actionHint: "Guided demo completed. Presenters can exit demo mode anytime."
-  }
-];
+export function buildDemoTimeline(profile: HomeownerProfile): DemoStep[] {
+  const fin = calculateHostingFinancials(profile),
+    legal = evaluateDcLegalCompliance(profile),
+    comps = profileComparables(profile),
+    stress = calculateHostingFinancials(
+      applyStressScenario(profile, "demand_drop_25"),
+    ),
+    decision = hostingDecision(profile);
+  const step = (
+    id: number,
+    timecode: string,
+    title: string,
+    focusSection: DemoStep["focusSection"],
+    presenterScript: string,
+    keyStatLabel: string,
+    keyStatValue: string,
+    keyStatNote: string,
+  ): DemoStep => ({
+    id,
+    timecode,
+    title,
+    headline: title,
+    focusSection,
+    presenterScript,
+    keyStatLabel,
+    keyStatValue,
+    keyStatNote,
+    actionHint:
+      "Review the current assumptions and calculated results on this tab.",
+  });
+  return [
+    step(
+      1,
+      "0:00–0:20",
+      "The Problem",
+      "intro",
+      "Advertised nightly prices do not show what a homeowner keeps. StayWise DC combines asking-price comparisons, legal screening, costs, taxes and host labor.",
+      "City median asking price",
+      money(DC_CITY_SUMMARY.medianAdvertisedPrice!),
+      "Historical asking prices; no realized occupancy is inferred.",
+    ),
+    step(
+      2,
+      "0:20–0:45",
+      "Sample Homeowner",
+      "profile",
+      profile.name +
+        " models " +
+        profile.rentalScope.replaceAll("_", " ") +
+        " in " +
+        profile.neighborhood +
+        ", offering " +
+        profile.annualAvailableNights +
+        " nights at " +
+        money(profile.nightlyPrice) +
+        " with " +
+        (profile.expectedOccupancyRate * 100).toFixed(1) +
+        "% assumed occupancy.",
+      "Modeled booked nights",
+      String(fin.actualBookedNightsProjected),
+      "This is a projection, not observed bookings.",
+    ),
+    step(
+      3,
+      "0:45–1:10",
+      "Legal & Market Comps",
+      "compliance",
+      "Screening classification: " +
+        legal.licenseCategory +
+        ". " +
+        legal.capReason +
+        " Matching " +
+        comps.roomType +
+        " comparisons have " +
+        comps.pricedListings +
+        " valid prices and a median of " +
+        (comps.medianAdvertisedPrice === null
+          ? "no data"
+          : money(comps.medianAdvertisedPrice)) +
+        ". No residence or license has been independently verified.",
+      "Screening",
+      legal.licenseCategory,
+      "User declarations require independent DLCP verification.",
+    ),
+    step(
+      4,
+      "1:10–1:40",
+      "Financial Analysis",
+      "financials",
+      fin.actualBookedNightsProjected +
+        " booked nights produce " +
+        money(fin.grossNightlyRevenue) +
+        " lodging revenue plus " +
+        money(fin.cleaningFeesCollected) +
+        " cleaning receipts, or " +
+        money(fin.grossGuestTurnover) +
+        " turnover. Cash operating costs are " +
+        money(fin.totalCashOperatingCosts) +
+        ". Pre-tax cash flow is " +
+        money(fin.netOperatingCashFlow) +
+        ". After " +
+        money(fin.annualSetupAmortization) +
+        " setup amortization and " +
+        money(fin.estimatedIncomeTaxLiability) +
+        " modeled tax, profit is " +
+        money(fin.economicProfitAfterSetupAndTax) +
+        ", before valuing host labor.",
+      "Profit after setup & tax",
+      money(fin.economicProfitAfterSetupAndTax),
+      "Modeled tax and amortization assumptions are editable.",
+    ),
+    step(
+      5,
+      "1:40–2:05",
+      "Risk & Demand Stress Test",
+      "stress",
+      "A relative 25% demand reduction gives " +
+        stress.actualBookedNightsProjected +
+        " projected nights, " +
+        money(stress.netOperatingCashFlow) +
+        " pre-tax cash flow and " +
+        money(stress.economicProfitAfterSetupAndTax) +
+        " profit after setup and modeled tax. Baseline operating-cost break-even is " +
+        displayNumber(fin.breakEvenBookedNights) +
+        " nights.",
+      "Break-even",
+      displayNumber(fin.breakEvenBookedNights) + " nights",
+      "Average contribution method; excludes income tax and imputed labor.",
+    ),
+    step(
+      6,
+      "2:05–2:30",
+      "Recommendation & Decision",
+      "recommendation",
+      "Recommendation: " +
+        decision.verdict +
+        ". " +
+        decision.reason +
+        " Profit before labor is " +
+        money(fin.economicProfitAfterSetupAndTax) +
+        ", over " +
+        displayNumber(fin.totalHostLaborHoursPerYear) +
+        " hours. Effective hourly return is " +
+        money(fin.effectiveHourlyWageEarned) +
+        ". Surplus after imputed labor is " +
+        money(fin.trueEconomicSurplusAfterLabor) +
+        ".",
+      "Recommendation",
+      decision.verdict,
+      "No long-term rental comparison is assumed.",
+    ),
+    step(
+      7,
+      "2:30–2:45",
+      "Close & Summary",
+      "intro",
+      "Review assumptions, compare matching listings and complete the legal verification checklist. Copy or print the current report; add the public app and Zoom links only after verifying them.",
+      "Deliverables",
+      "Review and record",
+      "Public URL and recording remain unverified placeholders.",
+    ),
+  ];
+}
+export const DEMO_TIMELINE = buildDemoTimeline(MAYA_PETWORTH_BASE_CASE);
 
 interface GuidedDemoBarProps {
+  profile: HomeownerProfile;
   isDemoActive: boolean;
   currentStepIndex: number;
   onStartDemo: () => void;
@@ -133,6 +223,7 @@ interface GuidedDemoBarProps {
 }
 
 export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
+  profile,
   isDemoActive,
   currentStepIndex,
   onStartDemo,
@@ -142,14 +233,15 @@ export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
   onJumpToStep,
   onResetToBaseline,
 }) => {
-  const currentStep = DEMO_TIMELINE[currentStepIndex] || DEMO_TIMELINE[0];
+  const timeline = buildDemoTimeline(profile);
+  const currentStep = timeline[currentStepIndex] || timeline[0];
 
   const handleNext = () => {
-    if (currentStepIndex === DEMO_TIMELINE.length - 2) {
+    if (currentStepIndex === timeline.length - 2) {
       confetti({
         particleCount: 60,
         spread: 70,
-        origin: { y: 0.7 }
+        origin: { y: 0.7 },
       });
     }
     onNextStep();
@@ -166,7 +258,11 @@ export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
                 MBA Assignment Mode
               </span>
               <p className="text-xs md:text-sm text-slate-200">
-                Primary Case: <strong className="text-white font-medium">Maya&apos;s Petworth Spare Bedroom</strong> (2–3 Min Zoom Presentation Ready)
+                Primary Case:{" "}
+                <strong className="text-white font-medium">
+                  Maya&apos;s Petworth Spare Bedroom
+                </strong>{" "}
+                (2–3 Min Zoom Presentation Ready)
               </p>
             </div>
           </div>
@@ -208,22 +304,22 @@ export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
           </span>
           <span className="text-slate-500">•</span>
           <span className="text-slate-300 font-medium">
-            Step {currentStep.id} of {DEMO_TIMELINE.length}: {currentStep.title}
+            Step {currentStep.id} of {timeline.length}: {currentStep.title}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-1">
-            {DEMO_TIMELINE.map((step, idx) => (
+            {timeline.map((step, idx) => (
               <button
                 key={step.id}
                 onClick={() => onJumpToStep(idx)}
                 className={`w-6 h-6 rounded-full text-[11px] font-bold transition-all ${
                   idx === currentStepIndex
-                    ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300'
+                    ? "bg-amber-500 text-slate-950 ring-2 ring-amber-300"
                     : idx < currentStepIndex
-                    ? 'bg-emerald-700 text-white hover:bg-emerald-600'
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      ? "bg-emerald-700 text-white hover:bg-emerald-600"
+                      : "bg-slate-800 text-slate-400 hover:bg-slate-700"
                 }`}
                 title={`${step.timecode} - ${step.title}`}
               >
@@ -249,7 +345,9 @@ export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
             <span className="text-amber-400 font-bold text-xs uppercase tracking-wide">
               Presenter Script
             </span>
-            <span className="text-slate-500 text-[10px]">({currentStep.timecode})</span>
+            <span className="text-slate-500 text-[10px]">
+              ({currentStep.timecode})
+            </span>
           </div>
           <p className="text-xs md:text-sm text-slate-100 leading-relaxed font-sans bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
             &ldquo;{currentStep.presenterScript}&rdquo;
@@ -279,10 +377,10 @@ export const GuidedDemoBar: React.FC<GuidedDemoBarProps> = ({
             </button>
 
             <span className="text-[11px] text-slate-400 font-mono">
-              {currentStepIndex + 1} / {DEMO_TIMELINE.length}
+              {currentStepIndex + 1} / {timeline.length}
             </span>
 
-            {currentStepIndex < DEMO_TIMELINE.length - 1 ? (
+            {currentStepIndex < timeline.length - 1 ? (
               <button
                 onClick={handleNext}
                 className="text-xs px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold flex items-center gap-1 shadow"
