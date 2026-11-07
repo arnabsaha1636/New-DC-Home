@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   DollarSign,
   TrendingDown,
@@ -9,9 +9,15 @@ import {
   Receipt,
   Sparkles,
   PieChart,
-  ArrowRight
-} from 'lucide-react';
-import { HomeownerProfile, FinancialBreakdown, calculateHostingFinancials } from '../utils/calculator';
+  ArrowRight,
+} from "lucide-react";
+import {
+  HomeownerProfile,
+  FinancialBreakdown,
+  calculateHostingFinancials,
+  money,
+  displayNumber,
+} from "../utils/calculator";
 
 interface FinancialDashboardProps {
   profile: HomeownerProfile;
@@ -38,14 +44,21 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Calculates gross turnover, cleaning deficit, platform fees, utilities, taxes, and net economic profit
+            Calculates gross turnover, cleaning deficit, platform fees,
+            utilities, taxes, and net economic profit
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-400">Modeled Booked Nights:</span>
           <span className="px-2.5 py-1 rounded bg-slate-800 text-amber-300 font-bold font-mono border border-slate-700">
-            {fin.actualBookedNightsProjected} nights ({profile.expectedOccupancyRate * 100}% of {fin.effectiveBookableNightsRequested})
+            {fin.actualBookedNightsProjected} nights (
+            {profile.expectedOccupancyRate * 100}% of{" "}
+            {Math.min(
+              fin.effectiveBookableNightsRequested,
+              fin.legalNightCapApplied,
+            )}
+            )
           </span>
         </div>
       </div>
@@ -61,7 +74,8 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             ${fin.grossGuestTurnover.toLocaleString()}
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
-            ${fin.grossNightlyRevenue.toLocaleString()} room + ${fin.cleaningFeesCollected} cleaning
+            ${fin.grossNightlyRevenue.toLocaleString()} room + $
+            {fin.cleaningFeesCollected} cleaning
           </p>
         </div>
 
@@ -87,20 +101,22 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             ${fin.netOperatingCashFlow.toLocaleString()}
           </div>
           <p className="text-[11px] text-emerald-300/80 mt-1">
-            ${Math.round(fin.netOperatingCashFlow / 12).toLocaleString()}/month cash in pocket
+            ${Math.round(fin.netOperatingCashFlow / 12).toLocaleString()}/month
+            cash in pocket
           </p>
         </div>
 
-        {/* Metric 4: True Economic Profit */}
+        {/* Metric 4: Profit After Setup & Modeled Tax */}
         <div className="bg-gradient-to-br from-slate-950 to-indigo-950/80 p-4 rounded-xl border border-indigo-500/40">
           <span className="text-[11px] uppercase tracking-wider text-amber-300 font-semibold block">
-            True Economic Profit
+            Profit After Setup & Modeled Tax
           </span>
           <div className="text-xl md:text-2xl font-black text-amber-300 font-mono mt-1">
-            ${Math.round(fin.economicProfitAfterSetupAndTax).toLocaleString()}
+            {money(fin.economicProfitAfterSetupAndTax)}
           </div>
           <p className="text-[11px] text-slate-300 mt-1">
-            After $750 setup amort & tax liability
+            After {money(fin.annualSetupAmortization)} setup amortization and
+            modeled tax; before labor
           </p>
         </div>
       </div>
@@ -113,7 +129,8 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             Live Homeowner Property & Financial Assumption Controls
           </span>
           <span className="text-[11px] text-slate-400 font-normal">
-            Move sliders to observe real-time profit and cash flow reconciliation
+            Move sliders to observe real-time profit and cash flow
+            reconciliation
           </span>
         </h3>
 
@@ -121,8 +138,12 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
           {/* Slider 1: Nightly Asking Price */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="nightly-price-input" className="font-medium">Nightly Asking Price</label>
-              <span className="font-mono font-bold text-amber-300">${profile.nightlyPrice} / night</span>
+              <label htmlFor="nightly-price-input" className="font-medium">
+                Nightly Asking Price
+              </label>
+              <span className="font-mono font-bold text-amber-300">
+                ${profile.nightlyPrice} / night
+              </span>
             </div>
             <input
               id="nightly-price-input"
@@ -131,12 +152,14 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               max={350}
               step={5}
               value={profile.nightlyPrice}
-              onChange={(e) => onChangeProfile({ nightlyPrice: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({ nightlyPrice: Number(e.target.value) })
+              }
               className="w-full accent-amber-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
               <span>$60 (Budget)</span>
-              <span>$155 (Petworth Med)</span>
+              <span>User asking-price assumption</span>
               <span>$350 (Luxury)</span>
             </div>
           </div>
@@ -144,21 +167,29 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
           {/* Slider 2: Annual Available Nights */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="available-nights-input" className="font-medium">Available Nights Offered</label>
-              <span className="font-mono font-bold text-indigo-300">{profile.annualAvailableNights} nights / yr</span>
+              <label htmlFor="available-nights-input" className="font-medium">
+                Available Nights Offered
+              </label>
+              <span className="font-mono font-bold text-indigo-300">
+                {profile.annualAvailableNights} nights / yr
+              </span>
             </div>
             <input
               id="available-nights-input"
               type="range"
-              min={30}
+              min={0}
               max={365}
-              step={10}
+              step={1}
               value={profile.annualAvailableNights}
-              onChange={(e) => onChangeProfile({ annualAvailableNights: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({
+                  annualAvailableNights: Number(e.target.value),
+                })
+              }
               className="w-full accent-indigo-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
-              <span>30 nts</span>
+              <span>0 nts</span>
               <span>90 nts (DC Unhosted Cap)</span>
               <span>365 nts (Full Yr)</span>
             </div>
@@ -167,33 +198,44 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
           {/* Slider 3: Expected Occupancy Rate */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="occupancy-rate-input" className="font-medium">Expected Occupancy Rate</label>
+              <label htmlFor="occupancy-rate-input" className="font-medium">
+                Expected Occupancy Rate
+              </label>
               <span className="font-mono font-bold text-emerald-300">
-                {Math.round(profile.expectedOccupancyRate * 100)}% ({fin.actualBookedNightsProjected} nights)
+                {Math.round(profile.expectedOccupancyRate * 100)}% (
+                {fin.actualBookedNightsProjected} nights)
               </span>
             </div>
             <input
               id="occupancy-rate-input"
               type="range"
-              min={0.15}
-              max={0.85}
+              min={0}
+              max={1}
               step={0.05}
               value={profile.expectedOccupancyRate}
-              onChange={(e) => onChangeProfile({ expectedOccupancyRate: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({
+                  expectedOccupancyRate: Number(e.target.value),
+                })
+              }
               className="w-full accent-emerald-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
-              <span>15% (Low)</span>
+              <span>0% (No bookings)</span>
               <span>50% (Baseline Model)</span>
-              <span>85% (Peak)</span>
+              <span>100% (Fully booked)</span>
             </div>
           </div>
 
           {/* Slider 4: Guest Cleaning Fee Charged */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="cleaning-charged-input" className="font-medium">Cleaning Charged to Guest</label>
-              <span className="font-mono font-bold text-slate-200">${profile.cleaningFeeChargedToGuest} / stay</span>
+              <label htmlFor="cleaning-charged-input" className="font-medium">
+                Cleaning Charged to Guest
+              </label>
+              <span className="font-mono font-bold text-slate-200">
+                ${profile.cleaningFeeChargedToGuest} / stay
+              </span>
             </div>
             <input
               id="cleaning-charged-input"
@@ -202,7 +244,11 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               max={120}
               step={5}
               value={profile.cleaningFeeChargedToGuest}
-              onChange={(e) => onChangeProfile({ cleaningFeeChargedToGuest: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({
+                  cleaningFeeChargedToGuest: Number(e.target.value),
+                })
+              }
               className="w-full accent-slate-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
@@ -215,8 +261,12 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
           {/* Slider 5: Cleaning Cost Paid to Service */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="cleaner-cost-input" className="font-medium">Cleaner Cost Paid per Stay</label>
-              <span className="font-mono font-bold text-rose-300">${profile.cleaningCostPaidPerStay} / stay</span>
+              <label htmlFor="cleaner-cost-input" className="font-medium">
+                Cleaner Cost Paid per Stay
+              </label>
+              <span className="font-mono font-bold text-rose-300">
+                ${profile.cleaningCostPaidPerStay} / stay
+              </span>
             </div>
             <input
               id="cleaner-cost-input"
@@ -225,7 +275,11 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               max={140}
               step={5}
               value={profile.cleaningCostPaidPerStay}
-              onChange={(e) => onChangeProfile({ cleaningCostPaidPerStay: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({
+                  cleaningCostPaidPerStay: Number(e.target.value),
+                })
+              }
               className="w-full accent-rose-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
@@ -238,8 +292,13 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
           {/* Slider 6: Owner Labor Hours per Reservation */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-slate-300">
-              <label htmlFor="owner-hours-input" className="font-medium">Host Labor Hours / Stay</label>
-              <span className="font-mono font-bold text-amber-300">{profile.ownerHoursPerReservation} hrs ({fin.totalHostLaborHoursPerYear} hrs/yr)</span>
+              <label htmlFor="owner-hours-input" className="font-medium">
+                Host Labor Hours / Stay
+              </label>
+              <span className="font-mono font-bold text-amber-300">
+                {profile.ownerHoursPerReservation} hrs (
+                {fin.totalHostLaborHoursPerYear} hrs/yr)
+              </span>
             </div>
             <input
               id="owner-hours-input"
@@ -248,7 +307,11 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               max={6.0}
               step={0.5}
               value={profile.ownerHoursPerReservation}
-              onChange={(e) => onChangeProfile({ ownerHoursPerReservation: Number(e.target.value) })}
+              onChange={(e) =>
+                onChangeProfile({
+                  ownerHoursPerReservation: Number(e.target.value),
+                })
+              }
               className="w-full accent-amber-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-slate-500">
@@ -260,6 +323,66 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
         </div>
       </div>
 
+      <details className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs">
+        <summary className="cursor-pointer font-bold text-amber-300">
+          Additional model assumptions
+        </summary>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {(
+            [
+              ["Average stay (nights)", "averageStayLengthNights", 1, 30],
+              [
+                "Initial setup budget",
+                "initialFurnishingSetupCost",
+                0,
+                1000000,
+              ],
+              [
+                "Setup amortization (years)",
+                "setupCostAmortizationYears",
+                1,
+                50,
+              ],
+              ["Monthly utilities", "monthlyUtilitiesIncremental", 0, 100000],
+              ["Monthly supplies", "monthlySuppliesAndConsumables", 0, 100000],
+              ["Monthly insurance add-on", "monthlyInsuranceAddon", 0, 100000],
+              ["Annual maintenance", "annualMaintenanceBudget", 0, 1000000],
+              ["Host platform fee (%)", "airbnbHostServiceFeePct", 0, 100],
+              ["Modeled income tax (%)", "homeownerTaxRateIncomePct", 0, 100],
+              ["Guest lodging tax (%)", "dcLodgingTaxPaidByGuestPct", 0, 100],
+              [
+                "Value of host time / hour",
+                "ownerOpportunityCostHourlyRate",
+                0,
+                100000,
+              ],
+            ] as const
+          ).map(([label, key, min, max]) => (
+            <label key={key}>
+              {label}
+              <input
+                aria-label={label}
+                type="number"
+                min={min}
+                max={max}
+                step="any"
+                value={profile[key]}
+                onChange={(e) =>
+                  onChangeProfile({ [key]: Number(e.target.value) })
+                }
+                className="mt-1 w-full p-2 bg-slate-900 border border-slate-700 rounded"
+              />
+            </label>
+          ))}
+        </div>
+        <p className="text-slate-400 mt-4">
+          Modeled income tax applies to positive profit after expenses and setup
+          amortization. Actual deductions, depreciation and personal tax
+          treatment vary. This is a planning assumption, not personalized tax
+          advice. Guest lodging tax is shown separately and is excluded from
+          host turnover and costs.
+        </p>
+      </details>
       {/* Transparent Financial Waterfall Reconciler */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 text-xs">
         {/* Column 1: Financial Waterfall Table */}
@@ -269,17 +392,30 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               <Receipt className="w-4 h-4 text-emerald-400" />
               Annual Cash Flow Breakdown
             </span>
-            <span className="text-[11px] font-mono text-slate-400">40 Reservations (3-nt avg)</span>
+            <span className="text-[11px] font-mono text-slate-400">
+              {fin.totalReservationsCount} Reservations (
+              {profile.averageStayLengthNights}-nt avg)
+            </span>
           </h4>
 
           <div className="space-y-1.5 font-mono text-xs">
             <div className="flex justify-between py-1 text-slate-300">
-              <span>+ Lodging Nights ({fin.actualBookedNightsProjected} × ${profile.nightlyPrice}):</span>
-              <span className="text-white font-bold">${fin.grossNightlyRevenue.toLocaleString()}</span>
+              <span>
+                + Lodging Nights ({fin.actualBookedNightsProjected} × $
+                {profile.nightlyPrice}):
+              </span>
+              <span className="text-white font-bold">
+                ${fin.grossNightlyRevenue.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between py-1 text-slate-300">
-              <span>+ Cleaning Fees Collected ({fin.totalReservationsCount} × ${profile.cleaningFeeChargedToGuest}):</span>
-              <span className="text-white font-bold">${fin.cleaningFeesCollected.toLocaleString()}</span>
+              <span>
+                + Cleaning Fees Collected ({fin.totalReservationsCount} × $
+                {profile.cleaningFeeChargedToGuest}):
+              </span>
+              <span className="text-white font-bold">
+                ${fin.cleaningFeesCollected.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between py-1.5 bg-slate-900/60 px-2 rounded font-bold text-amber-300 border border-slate-800">
               <span>= Gross Guest Turnover:</span>
@@ -287,30 +423,44 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             </div>
 
             <div className="flex justify-between py-1 text-rose-300/90 pt-2">
-              <span>- Airbnb Host Fee ({profile.airbnbHostServiceFeePct}%):</span>
+              <span>
+                - Airbnb Host Fee ({profile.airbnbHostServiceFeePct}%):
+              </span>
               <span>-${fin.airbnbPlatformFee.toFixed(0)}</span>
             </div>
             <div className="flex justify-between py-1 text-rose-300/90">
-              <span>- Cleaner Paid ({fin.totalReservationsCount} × ${profile.cleaningCostPaidPerStay}):</span>
+              <span>
+                - Cleaner Paid ({fin.totalReservationsCount} × $
+                {profile.cleaningCostPaidPerStay}):
+              </span>
               <span>-${fin.cleaningServiceExpenses.toLocaleString()}</span>
             </div>
 
             {/* Crucial Cleaning Deficit Callout */}
             <div className="py-1 px-2 rounded bg-rose-950/40 border border-rose-900/50 flex justify-between text-[11px] text-rose-300">
-              <span>⚠ Net Cleaning Deficit (Collected - Paid):</span>
-              <span className="font-bold">-${Math.abs(fin.netCleaningMargin)}</span>
+              <span>Net Cleaning Margin (Collected - Paid):</span>
+              <span className="font-bold">{money(fin.netCleaningMargin)}</span>
             </div>
 
             <div className="flex justify-between py-1 text-rose-300/90">
-              <span>- Incremental Utilities ($45/mo):</span>
+              <span>
+                - Incremental Utilities (
+                {money(profile.monthlyUtilitiesIncremental)}/mo):
+              </span>
               <span>-${fin.annualIncrementalUtilities}</span>
             </div>
             <div className="flex justify-between py-1 text-rose-300/90">
-              <span>- Guest Supplies ($35/mo):</span>
+              <span>
+                - Guest Supplies ({money(profile.monthlySuppliesAndConsumables)}
+                /mo):
+              </span>
               <span>-${fin.annualSupplies}</span>
             </div>
             <div className="flex justify-between py-1 text-rose-300/90">
-              <span>- Insurance STR Endorsement ($25/mo):</span>
+              <span>
+                - Insurance STR Endorsement (
+                {money(profile.monthlyInsuranceAddon)}/mo):
+              </span>
               <span>-${fin.annualInsurance}</span>
             </div>
             <div className="flex justify-between py-1 text-rose-300/90">
@@ -324,17 +474,29 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             </div>
 
             <div className="flex justify-between py-1 text-slate-400 pt-2 border-t border-slate-800">
-              <span>- Furnishing Setup Amortization ($1500 / 2 yr):</span>
+              <span>
+                - Furnishing Setup Amortization (
+                {money(profile.initialFurnishingSetupCost)} /{" "}
+                {profile.setupCostAmortizationYears} yr):
+              </span>
               <span>-${fin.annualSetupAmortization}</span>
             </div>
             <div className="flex justify-between py-1 text-slate-400">
-              <span>- Estimated Income Tax Liability ({profile.homeownerTaxRateIncomePct}%):</span>
-              <span>-${Math.round(fin.estimatedIncomeTaxLiability).toLocaleString()}</span>
+              <span>
+                - Estimated Income Tax Liability (
+                {profile.homeownerTaxRateIncomePct}%):
+              </span>
+              <span>-{money(fin.estimatedIncomeTaxLiability)}</span>
             </div>
 
             <div className="flex justify-between py-2 bg-amber-950/40 px-2 rounded font-bold text-amber-300 border border-amber-800/40 text-sm">
-              <span>= True Economic Profit:</span>
-              <span>${Math.round(fin.economicProfitAfterSetupAndTax).toLocaleString()}</span>
+              <span>= Profit After Setup & Modeled Tax:</span>
+              <span>
+                $
+                {Math.round(
+                  fin.economicProfitAfterSetupAndTax,
+                ).toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
@@ -348,20 +510,34 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             <div className="space-y-2 text-xs text-slate-300">
               <div className="flex justify-between items-center">
                 <span>Total Host Labor Hours:</span>
-                <span className="font-mono font-bold text-white">{fin.totalHostLaborHoursPerYear} hours / yr</span>
+                <span className="font-mono font-bold text-white">
+                  {fin.totalHostLaborHoursPerYear} hours / yr
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span>Maya&apos;s Time Opportunity Cost ($35/hr):</span>
-                <span className="font-mono text-rose-300">-${fin.valueHostTimeImputed.toLocaleString()}</span>
+                <span>
+                  Host Time Opportunity Cost (
+                  {money(profile.ownerOpportunityCostHourlyRate)}/hr):
+                </span>
+                <span className="font-mono text-rose-300">
+                  -${fin.valueHostTimeImputed.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-slate-800">
-                <span className="font-semibold text-amber-300">Economic Surplus After Personal Labor:</span>
+                <span className="font-semibold text-amber-300">
+                  Economic Surplus After Personal Labor:
+                </span>
                 <span className="font-mono font-bold text-amber-300">
-                  ${Math.round(fin.trueEconomicSurplusAfterLabor).toLocaleString()}
+                  $
+                  {Math.round(
+                    fin.trueEconomicSurplusAfterLabor,
+                  ).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center bg-indigo-950/40 p-2 rounded border border-indigo-800/40 mt-2">
-                <span className="text-indigo-200 font-medium">Effective Hourly Return on Effort:</span>
+                <span className="text-indigo-200 font-medium">
+                  Effective Hourly Return on Effort:
+                </span>
                 <span className="text-base font-black text-indigo-300 font-mono">
                   ${fin.effectiveHourlyWageEarned.toFixed(2)} / hr
                 </span>
@@ -375,9 +551,11 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
             </h4>
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
-                <span className="text-[10px] uppercase text-slate-400 block">Break-Even Booked Nights</span>
+                <span className="text-[10px] uppercase text-slate-400 block">
+                  Break-Even Booked Nights
+                </span>
                 <span className="text-lg font-black text-amber-400 font-mono">
-                  {fin.breakEvenBookedNights} Nights
+                  {displayNumber(fin.breakEvenBookedNights)} Nights
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-0.5">
                   to cover all fixed expenses
@@ -385,18 +563,30 @@ export const FinancialDashboardSection: React.FC<FinancialDashboardProps> = ({
               </div>
 
               <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
-                <span className="text-[10px] uppercase text-slate-400 block">Break-Even Occupancy</span>
+                <span className="text-[10px] uppercase text-slate-400 block">
+                  Break-Even Occupancy
+                </span>
                 <span className="text-lg font-black text-emerald-400 font-mono">
-                  {fin.breakEvenOccupancyPct}%
+                  {displayNumber(fin.breakEvenOccupancyPct)}%
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-0.5">
-                  Safe buffer of {(profile.expectedOccupancyRate * 100 - fin.breakEvenOccupancyPct).toFixed(1)}%
+                  {Number.isFinite(fin.breakEvenOccupancyPct)
+                    ? `Safety margin ${(profile.expectedOccupancyRate * 100 - fin.breakEvenOccupancyPct).toFixed(1)} percentage points`
+                    : "Break-even is not achievable"}
                 </span>
               </div>
             </div>
 
             <p className="text-[11px] text-slate-400 mt-3 leading-relaxed">
-              Maya only needs to achieve <strong>13.8% occupancy (33 booked nights)</strong> to cover all incremental hosting costs, utilities, insurance, maintenance, and furnish amortizations.
+              This operating-cost break-even estimate needs{" "}
+              <strong>
+                {displayNumber(fin.breakEvenOccupancyPct)}% occupancy (
+                {displayNumber(fin.breakEvenBookedNights)} booked nights)
+              </strong>
+              . It divides fixed annual expenses plus setup amortization by the
+              average nightly contribution after platform and cleaning costs. It
+              excludes income tax and imputed labor, and approximates fractional
+              stays.
             </p>
           </div>
         </div>

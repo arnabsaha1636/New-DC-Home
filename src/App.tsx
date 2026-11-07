@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Building2,
   FileText,
@@ -14,27 +14,50 @@ import {
   Sliders,
   DollarSign,
   Download,
-  Info
-} from 'lucide-react';
-import { MAYA_PETWORTH_BASE_CASE, HomeownerProfile } from './utils/calculator';
-import { GuidedDemoBar, DEMO_TIMELINE } from './components/GuidedDemoBar';
-import { LegalEligibilitySection } from './components/LegalEligibilitySection';
-import { MarketExplorerSection } from './components/MarketExplorerSection';
-import { FinancialDashboardSection } from './components/FinancialDashboardSection';
-import { StressSimulatorSection } from './components/StressSimulatorSection';
-import { DecisionDashboardSection } from './components/DecisionDashboardSection';
-import { SubmissionPackageModal } from './components/SubmissionPackageModal';
+  Info,
+} from "lucide-react";
+import {
+  MAYA_PETWORTH_BASE_CASE,
+  HomeownerProfile,
+  normalizeProfile,
+  calculateHostingFinancials,
+  evaluateDcLegalCompliance,
+  applyStressScenario,
+  hostingDecision,
+  money,
+  displayNumber,
+} from "./utils/calculator";
+import { profileComparables, DC_CITY_SUMMARY } from "./data/dcMarketData";
+import { GuidedDemoBar, DEMO_TIMELINE } from "./components/GuidedDemoBar";
+import { LegalEligibilitySection } from "./components/LegalEligibilitySection";
+import { MarketExplorerSection } from "./components/MarketExplorerSection";
+import { FinancialDashboardSection } from "./components/FinancialDashboardSection";
+import { StressSimulatorSection } from "./components/StressSimulatorSection";
+import { DecisionDashboardSection } from "./components/DecisionDashboardSection";
+import { SubmissionPackageModal } from "./components/SubmissionPackageModal";
 
 export default function App() {
-  const [profile, setProfile] = useState<HomeownerProfile>(MAYA_PETWORTH_BASE_CASE);
-  const [activeTab, setActiveTab] = useState<'overview' | 'legal' | 'market' | 'financials' | 'stress' | 'recommendation'>('overview');
+  const [profile, setProfile] = useState<HomeownerProfile>(
+    MAYA_PETWORTH_BASE_CASE,
+  );
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "legal" | "market" | "financials" | "stress" | "recommendation"
+  >("overview");
   const [isDemoActive, setIsDemoActive] = useState<boolean>(false);
   const [currentDemoStepIndex, setCurrentDemoStepIndex] = useState<number>(0);
-  const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState<boolean>(false);
+  const [isSubmissionModalOpen, setIsSubmissionModalOpen] =
+    useState<boolean>(false);
 
+  const fin = calculateHostingFinancials(profile),
+    legal = evaluateDcLegalCompliance(profile),
+    comps = profileComparables(profile),
+    decision = hostingDecision(profile),
+    stress = calculateHostingFinancials(
+      applyStressScenario(profile, "demand_drop_25"),
+    );
   // Profile update handler
   const handleUpdateProfile = (updates: Partial<HomeownerProfile>) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
+    setProfile((prev) => normalizeProfile({ ...prev, ...updates }));
   };
 
   // Restore Maya Chen baseline
@@ -47,7 +70,7 @@ export default function App() {
     setIsDemoActive(true);
     setCurrentDemoStepIndex(0);
     handleResetToBaseline();
-    setActiveTab('overview');
+    setActiveTab("overview");
   };
 
   // Exit demo
@@ -82,18 +105,18 @@ export default function App() {
   const syncTabWithDemoStep = (index: number) => {
     const step = DEMO_TIMELINE[index];
     if (!step) return;
-    if (step.focusSection === 'intro' || step.focusSection === 'profile') {
-      setActiveTab('overview');
-    } else if (step.focusSection === 'compliance') {
-      setActiveTab('legal');
-    } else if (step.focusSection === 'market') {
-      setActiveTab('market');
-    } else if (step.focusSection === 'financials') {
-      setActiveTab('financials');
-    } else if (step.focusSection === 'stress') {
-      setActiveTab('stress');
-    } else if (step.focusSection === 'recommendation') {
-      setActiveTab('recommendation');
+    if (step.focusSection === "intro" || step.focusSection === "profile") {
+      setActiveTab("overview");
+    } else if (step.focusSection === "compliance") {
+      setActiveTab("legal");
+    } else if (step.focusSection === "market") {
+      setActiveTab("market");
+    } else if (step.focusSection === "financials") {
+      setActiveTab("financials");
+    } else if (step.focusSection === "stress") {
+      setActiveTab("stress");
+    } else if (step.focusSection === "recommendation") {
+      setActiveTab("recommendation");
     }
   };
 
@@ -101,6 +124,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
       {/* MBA Guided Demo Controller Banner */}
       <GuidedDemoBar
+        profile={profile}
         isDemoActive={isDemoActive}
         currentStepIndex={currentDemoStepIndex}
         onStartDemo={handleStartDemo}
@@ -140,7 +164,9 @@ export default function App() {
               className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow"
             >
               <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">2-Page Report & Deliverables</span>
+              <span className="hidden sm:inline">
+                2-Page Report & Deliverables
+              </span>
               <span className="sm:hidden">Report</span>
             </button>
           </div>
@@ -149,66 +175,66 @@ export default function App() {
         {/* Primary View Navigation Tabs */}
         <div className="max-w-7xl mx-auto px-4 flex gap-2 overflow-x-auto text-xs font-medium border-t border-slate-800/60 pt-1">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => setActiveTab("overview")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'overview'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "overview"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
             Overview & Maya&apos;s Case
           </button>
           <button
-            onClick={() => setActiveTab('legal')}
+            onClick={() => setActiveTab("legal")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'legal'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "legal"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             DC Legal Eligibility
           </button>
           <button
-            onClick={() => setActiveTab('market')}
+            onClick={() => setActiveTab("market")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'market'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "market"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <MapPin className="w-3.5 h-3.5" />
             Market Comps (39 Neighborhoods)
           </button>
           <button
-            onClick={() => setActiveTab('financials')}
+            onClick={() => setActiveTab("financials")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'financials'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "financials"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <DollarSign className="w-3.5 h-3.5" />
             Revenue & Profit Calculator
           </button>
           <button
-            onClick={() => setActiveTab('stress')}
+            onClick={() => setActiveTab("stress")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'stress'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "stress"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
             What-If Simulator
           </button>
           <button
-            onClick={() => setActiveTab('recommendation')}
+            onClick={() => setActiveTab("recommendation")}
             className={`py-2 px-3 border-b-2 transition flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'recommendation'
-                ? 'border-amber-400 text-amber-300 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "recommendation"
+                ? "border-amber-400 text-amber-300 font-semibold"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <Award className="w-3.5 h-3.5" />
@@ -220,7 +246,7 @@ export default function App() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
         {/* Tab 1: Overview & Maya Case Profile */}
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Landing Hero */}
             <div className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/70 border border-slate-800 shadow-xl relative overflow-hidden">
@@ -233,12 +259,14 @@ export default function App() {
                   Should a Washington, DC Homeowner List on Airbnb?
                 </h2>
                 <p className="text-sm md:text-base text-slate-300 leading-relaxed">
-                  Moving DC residents from vague guesses about advertised Airbnb nightly rates to an explainable, legally compliant, financially realistic decision.
+                  Moving DC residents from vague guesses about advertised Airbnb
+                  nightly rates to an explainable, legally compliant,
+                  financially realistic decision.
                 </p>
 
                 <div className="pt-2 flex flex-wrap gap-3">
                   <button
-                    onClick={() => setActiveTab('financials')}
+                    onClick={() => setActiveTab("financials")}
                     className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs md:text-sm shadow-md transition"
                   >
                     Explore Profit Waterfall
@@ -262,38 +290,53 @@ export default function App() {
                   </span>
                   <div>
                     <h3 className="font-bold text-white text-base">
-                      Primary Demo Case: Maya Chen&apos;s Petworth Rowhouse
+                      Current Case: {profile.name} · {profile.neighborhood}
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Fictional owner-occupant in Petworth, Washington, DC • Hosted Spare Bedroom
+                      Illustrative homeowner assumptions ·{" "}
+                      {profile.rentalScope.replaceAll("_", " ")} ·{" "}
+                      {profile.hostPresentDuringStays
+                        ? "host on site"
+                        : "host absent"}
                     </p>
                   </div>
                 </div>
 
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                  Qualifies for DC Hosted License
+                  Screening: {legal.licenseCategory} (unverified)
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4 text-xs">
                 <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 uppercase text-[10px] block font-medium">Homeowner Goal</span>
+                  <span className="text-slate-400 uppercase text-[10px] block font-medium">
+                    Homeowner Goal
+                  </span>
                   <p className="text-slate-200 mt-1 font-medium">
-                    Generate supplemental monthly cash flow to offset rising property taxes and living expenses without giving up her home.
+                    Generate supplemental monthly cash flow to offset rising
+                    property taxes and living expenses without giving up her
+                    home.
                   </p>
                 </div>
 
                 <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 uppercase text-[10px] block font-medium">Hosting Strategy</span>
+                  <span className="text-slate-400 uppercase text-[10px] block font-medium">
+                    Hosting Strategy
+                  </span>
                   <p className="text-slate-200 mt-1 font-medium">
-                    Rent 1 furnished spare bedroom (2 guests max, 3-night avg stay) for up to 240 nights/year while living on-site.
+                    Offer {profile.rentalScope.replaceAll("_", " ")} for{" "}
+                    {profile.annualAvailableNights} nights/year with a{" "}
+                    {profile.averageStayLengthNights}-night average stay.
                   </p>
                 </div>
 
                 <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 uppercase text-[10px] block font-medium">Key Concerns</span>
+                  <span className="text-slate-400 uppercase text-[10px] block font-medium">
+                    Key Concerns
+                  </span>
                   <p className="text-slate-200 mt-1 font-medium">
-                    Personal privacy in shared spaces, cleaner turnover quality, wear and tear, and time spent on guest management.
+                    Personal privacy in shared spaces, cleaner turnover quality,
+                    wear and tear, and time spent on guest management.
                   </p>
                 </div>
               </div>
@@ -305,18 +348,64 @@ export default function App() {
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300">
                   <div className="space-y-1.5">
-                    <p>1. <strong>Is Maya eligible?</strong> Yes, under DC Hosted STR rules (Homestead primary residence).</p>
-                    <p>2. <strong>Comparable listing rates?</strong> Petworth median asking rate is $155; Maya tests $125.</p>
-                    <p>3. <strong>What rate should she test?</strong> $125/night to secure high booking momentum.</p>
-                    <p>4. <strong>Earnings at 50% occupancy?</strong> $16,600 gross turnover ($15,000 nightly + $1,600 cleaning).</p>
-                    <p>5. <strong>What does she actually keep?</strong> $12,242 net cash flow; $9,521 economic profit after taxes.</p>
+                    <p>
+                      1. <strong>Legal screening?</strong>{" "}
+                      {legal.licenseCategory}; independent verification
+                      required.
+                    </p>
+                    <p>
+                      2. <strong>Matching asking prices?</strong>{" "}
+                      {comps.pricedListings} priced {comps.roomType} listings;
+                      median{" "}
+                      {comps.medianAdvertisedPrice === null
+                        ? "No data"
+                        : money(comps.medianAdvertisedPrice)}
+                      .
+                    </p>
+                    <p>
+                      3. <strong>Rate to test?</strong> Current assumption:{" "}
+                      {money(profile.nightlyPrice)}/night. Advertised prices do
+                      not guarantee demand.
+                    </p>
+                    <p>
+                      4. <strong>Modeled turnover?</strong>{" "}
+                      {money(fin.grossGuestTurnover)} across{" "}
+                      {fin.actualBookedNightsProjected} booked nights.
+                    </p>
+                    <p>
+                      5. <strong>What does the owner keep?</strong>{" "}
+                      {money(fin.netOperatingCashFlow)} cash flow before tax;{" "}
+                      {money(fin.economicProfitAfterSetupAndTax)} profit after
+                      setup and modeled tax, before labor.
+                    </p>
                   </div>
                   <div className="space-y-1.5">
-                    <p>6. <strong>If demand drops 25%?</strong> Profit drops to $6,974; still well above her 33-night break-even.</p>
-                    <p>7. <strong>Work required?</strong> 100 hours per year (2.5 hours per stay across 40 stays).</p>
-                    <p>8. <strong>Is it worth the privacy loss?</strong> Yes: effectively $95.21/hour, surpassing her $35/hour threshold.</p>
-                    <p>9. <strong>What to do before listing?</strong> Complete DLCP BBL registration ($104.50) and insurance rider.</p>
-                    <p>10. <strong>Final verdict?</strong> Proceed with a 90-day pilot before investing further capital.</p>
+                    <p>
+                      6. <strong>If demand drops 25%?</strong>{" "}
+                      {money(stress.economicProfitAfterSetupAndTax)} modeled
+                      profit; baseline break-even{" "}
+                      {displayNumber(fin.breakEvenBookedNights)} nights.
+                    </p>
+                    <p>
+                      7. <strong>Work required?</strong>{" "}
+                      {displayNumber(fin.totalHostLaborHoursPerYear)} hours
+                      across {fin.totalReservationsCount} reservations.
+                    </p>
+                    <p>
+                      8. <strong>Value of time?</strong>{" "}
+                      {money(fin.effectiveHourlyWageEarned)}/hour before imputed
+                      labor; surplus {money(fin.trueEconomicSurplusAfterLabor)}{" "}
+                      after labor.
+                    </p>
+                    <p>
+                      9. <strong>Before listing?</strong> Verify primary
+                      residence, license, restrictions, insurance and tax
+                      responsibilities.
+                    </p>
+                    <p>
+                      10. <strong>Current verdict?</strong> {decision.verdict}:{" "}
+                      {decision.reason}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -325,33 +414,39 @@ export default function App() {
             {/* Quick Navigation Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
-                onClick={() => setActiveTab('legal')}
+                onClick={() => setActiveTab("legal")}
                 className="p-4 bg-slate-900 border border-slate-800 hover:border-indigo-500 rounded-xl text-left transition"
               >
                 <ShieldCheck className="w-5 h-5 text-indigo-400 mb-2" />
                 <h4 className="text-sm font-bold text-white">DC Legal Rules</h4>
                 <p className="text-xs text-slate-400 mt-1">
-                  Examine the DLCP 90-night limit, Homestead deduction checks, and fine structures.
+                  Examine the DLCP 90-night limit, Homestead deduction checks,
+                  and fine structures.
                 </p>
               </button>
 
               <button
-                onClick={() => setActiveTab('market')}
+                onClick={() => setActiveTab("market")}
                 className="p-4 bg-slate-900 border border-slate-800 hover:border-emerald-500 rounded-xl text-left transition"
               >
                 <MapPin className="w-5 h-5 text-emerald-400 mb-2" />
-                <h4 className="text-sm font-bold text-white">Inside Airbnb Comps</h4>
+                <h4 className="text-sm font-bold text-white">
+                  Inside Airbnb Comps
+                </h4>
                 <p className="text-xs text-slate-400 mt-1">
-                  Browse real data across 39 DC neighborhood groups from the September 2026 snapshot.
+                  Browse real data across 39 DC neighborhood groups from the
+                  September 2026 snapshot.
                 </p>
               </button>
 
               <button
-                onClick={() => setActiveTab('stress')}
+                onClick={() => setActiveTab("stress")}
                 className="p-4 bg-slate-900 border border-slate-800 hover:border-rose-500 rounded-xl text-left transition"
               >
                 <Activity className="w-5 h-5 text-rose-400 mb-2" />
-                <h4 className="text-sm font-bold text-white">Demand Stress Test</h4>
+                <h4 className="text-sm font-bold text-white">
+                  Demand Stress Test
+                </h4>
                 <p className="text-xs text-slate-400 mt-1">
                   Simulate -25% occupancy and evaluate break-even resilience.
                 </p>
@@ -361,35 +456,47 @@ export default function App() {
         )}
 
         {/* Tab 2: DC Legal Eligibility */}
-        {activeTab === 'legal' && (
-          <LegalEligibilitySection profile={profile} onChangeProfile={handleUpdateProfile} />
+        {activeTab === "legal" && (
+          <LegalEligibilitySection
+            profile={profile}
+            onChangeProfile={handleUpdateProfile}
+          />
         )}
 
         {/* Tab 3: Inside Airbnb Market Explorer */}
-        {activeTab === 'market' && (
+        {activeTab === "market" && (
           <MarketExplorerSection
             profile={profile}
-            onSelectNeighborhood={(neighborhood, medianPrice) => {
+            onSelectNeighborhood={(neighborhood, medianPrice, roomType) => {
               handleUpdateProfile({
                 neighborhood,
-                nightlyPrice: Math.round(medianPrice * 0.8), // Competitive 20% discount for private room
+                nightlyPrice: medianPrice,
+                hostPresentDuringStays: roomType === "Private room",
+                rentalScope:
+                  roomType === "Private room" ? "spare_room" : "entire_home",
               });
             }}
           />
         )}
 
         {/* Tab 4: Financial Waterfall & Profit Engine */}
-        {activeTab === 'financials' && (
-          <FinancialDashboardSection profile={profile} onChangeProfile={handleUpdateProfile} />
+        {activeTab === "financials" && (
+          <FinancialDashboardSection
+            profile={profile}
+            onChangeProfile={handleUpdateProfile}
+          />
         )}
 
         {/* Tab 5: What-If Risk Simulator */}
-        {activeTab === 'stress' && (
-          <StressSimulatorSection profile={profile} onChangeProfile={handleUpdateProfile} />
+        {activeTab === "stress" && (
+          <StressSimulatorSection
+            profile={profile}
+            onChangeProfile={handleUpdateProfile}
+          />
         )}
 
         {/* Tab 6: Decision Scorecard */}
-        {activeTab === 'recommendation' && (
+        {activeTab === "recommendation" && (
           <DecisionDashboardSection
             profile={profile}
             onOpenReportModal={() => setIsSubmissionModalOpen(true)}
@@ -399,6 +506,7 @@ export default function App() {
 
       {/* Submission Support Package & 2-Page PDF Modal */}
       <SubmissionPackageModal
+        profile={profile}
         isOpen={isSubmissionModalOpen}
         onClose={() => setIsSubmissionModalOpen(false)}
       />
@@ -406,8 +514,13 @@ export default function App() {
       {/* Clean Academic Footer */}
       <footer className="border-t border-slate-800 bg-slate-950 py-4 text-xs text-slate-500 text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
-          <span>StayWise DC • Decision Analytics for Washington, DC Homeowners</span>
-          <span>Data Source: Inside Airbnb DC Snapshot (Sep 19, 2026) • DC Law 22-307</span>
+          <span>
+            StayWise DC • Decision Analytics for Washington, DC Homeowners
+          </span>
+          <span>
+            Data Source: Inside Airbnb DC Snapshot (Sep 19, 2026) • DC Law
+            22-307
+          </span>
           <button
             onClick={() => setIsSubmissionModalOpen(true)}
             className="text-indigo-400 hover:underline"
